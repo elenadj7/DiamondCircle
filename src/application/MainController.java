@@ -4,7 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.Vector;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.FileHandler;
@@ -56,7 +56,7 @@ public class MainController extends Application{
 	public static FileHandler handler;
 	public static boolean endOfSimulation = false;
 	public static AtomicBoolean run = new AtomicBoolean(true);
-	public static HashMap<Integer,BoardField> board = new HashMap<>();
+	public static Hashtable<Integer,BoardField> board = new Hashtable<>();
 	public static Label time;
 	public static Label cardLabel;
 	public static Label labelResults;
@@ -347,10 +347,6 @@ public class MainController extends Application{
 				BoardField field = board.get(id);
 				Label label = field.getLabel();
 				label.setGraphic(null);
-				if(!field.hasFigure()) {
-					
-					label.setText(id + "");
-				}
 				field.hasDiamond(false);
 			}
 			
@@ -387,9 +383,7 @@ public class MainController extends Application{
 		labelResults.setText(card.toString());
 	}
 	
-	public static void updateFigure(int oldPosition, Figure figure, Player player, Vector<Integer> matrixPath) {
-		
-		String text = "Igrač " + player.getUsername() + " je na potezu. ";
+	public static void updateFigure(int oldPosition, Figure figure, Vector<Integer> matrixPath) {
 			
 		BoardField oldPositionField = board.get(matrixPath.elementAt(oldPosition));
 		Label oldPositionLabel = oldPositionField.getLabel();
@@ -397,19 +391,18 @@ public class MainController extends Application{
 		oldPositionLabel.setTextFill(Color.rgb(42, 97, 113));
 		oldPositionLabel.setBackground(new Background(new BackgroundFill(Color.rgb(215, 247, 245), new CornerRadii(3), Insets.EMPTY)));
 			
-				
 		BoardField currentPositionField = board.get(matrixPath.elementAt(figure.getCurrentPosition()));
 		Label currentPositionLabel = currentPositionField.getLabel();
+		if(currentPositionField.hasDiamond()) {
+			
+			currentPositionLabel.setGraphic(null);
+			currentPositionField.hasDiamond(false);
+		}
+		
 		currentPositionLabel.setText(figure.getId());
 		currentPositionLabel.setTextFill(Color.BLACK);
 		currentPositionLabel.setBackground(new Background(new BackgroundFill(figure.getColor(), new CornerRadii(3), Insets.EMPTY)));
-			
-				
-		int transition = figure.getCurrentPosition() - oldPosition;
-		text += figure.toString() + " prelazi " + transition + " polja i pomjera se sa pozicije " + matrixPath.elementAt(oldPosition) + " na poziciju " + matrixPath.elementAt(figure.getCurrentPosition()) + ".";
-				
 		
-		labelResults.setText(text);
 	}
 		
 	public static void removeOldFigure(Figure figure, int oldPosition, Vector<Integer> matrixPath) {
@@ -495,5 +488,10 @@ public class MainController extends Application{
 		label.setBackground(new Background(new BackgroundFill(figure.getColor(), new CornerRadii(3), Insets.EMPTY)));
 		
 		labelResults.setText(figure.toString() + " kreće sa igrom. ");
+	}
+	
+	public static void writeAboutMove(int fieldsToMove, Figure figure, Player player, int oldPosition, Vector<Integer> matrixPath) {
+		
+		labelResults.setText("Igrač " + player.getUsername() + " je na potezu. " + figure.toString() + " se pomjera sa pozicije " + matrixPath.elementAt(oldPosition) + " za " + fieldsToMove + " polja.");
 	}
 }

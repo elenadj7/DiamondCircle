@@ -26,6 +26,7 @@ public class Game extends Thread{
 	private Vector<Integer> holes = new Vector<>();
 	private Vector<Figure> eatenFigures = new Vector<>();
 	private Vector<Integer> matrixPath = new Vector<>();
+	private int oldPosition = 0;
 	
 	public static Object toLock = new Object();
 	
@@ -114,7 +115,8 @@ public class Game extends Thread{
 				if(card instanceof RegularCard) {
 					
 					int cardFields = ((RegularCard) card).getId();
-					int oldPosition = currentFigure.getCurrentPosition();
+					oldPosition = currentFigure.getCurrentPosition();
+					int veryOldPosition = oldPosition;
 				
 					if(oldPosition == 0) {
 						
@@ -161,6 +163,16 @@ public class Game extends Thread{
 					int diamonds = 0;
 					boolean old = false;
 					
+					Platform.runLater(new Runnable() {
+
+						@Override
+						public void run() {
+							
+							MainController.writeAboutMove(fieldsToMove, currentFigure, getPlayer(currentFigure), veryOldPosition, matrixPath);
+						}
+						
+					});
+					
 					while(i < fieldsToMove) {
 					
 						currentFigure.setCurrentPosition(currentFigure.getCurrentPosition() + 1);
@@ -189,6 +201,12 @@ public class Game extends Thread{
 								
 							});
 							
+							try {
+								sleep(1000);
+							} catch (InterruptedException e) {
+								MainController.logger.log(Level.SEVERE, null, e);
+							}
+							
 							break;
 						}
 						
@@ -198,12 +216,45 @@ public class Game extends Thread{
 								
 							if(field.hasDiamond()) {
 									
-								field.hasDiamond(false);
+								//field.hasDiamond(false);
 								diamonds++;
 							}
 								
 							i++;
 							
+							if(!old) {
+								
+								if(!MainController.run.get()) {
+									
+									synchronized(toLock) {
+										try {
+											toLock.wait();
+										} catch (InterruptedException e) {
+											
+											MainController.logger.log(Level.SEVERE, null, e);
+											
+										}
+									}
+								}
+								
+								Platform.runLater(new Runnable() {
+									
+									@Override
+									public void run() {
+										
+										MainController.updateFigure(oldPosition, currentFigure, matrixPath);
+									}
+									
+								});
+								
+								try {
+									sleep(1000);
+								} catch (InterruptedException e) {
+									MainController.logger.log(Level.SEVERE, null, e);
+								}
+							}
+							
+							oldPosition = currentFigure.getCurrentPosition();
 						}
 						
 						currentFigure.addToPath(matrixPath.elementAt(nextFieldIndex));
@@ -211,44 +262,13 @@ public class Game extends Thread{
 					
 					currentFigure.setNumberOfDiamonds(diamonds);
 					
-					MainController.board.get(matrixPath.elementAt(oldPosition)).hasFigure(false);
+					MainController.board.get(matrixPath.elementAt(veryOldPosition)).hasFigure(false);
 					if(!old) {
 						
 						MainController.board.get(matrixPath.elementAt(currentFigure.getCurrentPosition())).hasFigure(true);
 					}
-					
-					if(!MainController.run.get()) {
-						
-						synchronized(toLock) {
-							try {
-								toLock.wait();
-							} catch (InterruptedException e) {
-								
-								MainController.logger.log(Level.SEVERE, null, e);
-								
-							}
-						}
-					}
-					
-					if(!old) {
-						
-						Platform.runLater(new Runnable() {
-							
-							@Override
-							public void run() {
-								
-								MainController.updateFigure(oldPosition, currentFigure, getPlayer(currentFigure), matrixPath);
-							}
-							
-						});
-					}
 				}
 				
-				try {
-					sleep(1000);
-				} catch (InterruptedException e) {
-					MainController.logger.log(Level.SEVERE, null, e);
-				}
 				
 				if(card instanceof SpecialCard) {
 					
@@ -281,9 +301,11 @@ public class Game extends Thread{
 													
 												currentFigures.insertElementAt(player.getPlayingFigure(), positionOfFigure);
 											}
+											
+											field.hasFigure(false);
 										}
 										else {
-											field.hasFigure(false);
+											field.hasFigure(true);
 										}
 											
 										figures.add(current);

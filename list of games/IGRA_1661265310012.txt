@@ -1,0 +1,11 @@
+Igrac Elena:
+Figura 1 (RF, zuta, 12s)-4-12-20-28-34 stigla do cilja ne
+Figura 2 (SFF, zuta, 55s)-4-12-20-28-34-40-46-38-30-22-16-10-11-19-27-33-39-31-23-17-18-26-32-24-25 stigla do cilja da
+Figura 3 (FF, zuta, 95s)-4-12-20-28-34-40-46-38-30-22-16-10-11-19-27-33-39-31-23-17-18-26-32-24-25 stigla do cilja da
+Figura 4 (FF, zuta, 33s)-4-12-20-28-34-40-46-38-30-22-16-10-11-19-27-33-39-31-23-17-18-26-32-24-25 stigla do cilja da
+Igrac Minja:
+Figura 5 (SFF, zelena, 16s)-4-12-20-28-34-40 stigla do cilja ne
+Figura 6 (SFF, zelena, 36s)-4-12-20-28-34-40-46-38-30-22-16-10-11-19-27-33-39-31-23-17-18 stigla do cilja ne
+Figura 7 (SFF, zelena, 40s)-4-12-20-28-34-40-46-38-30-22-16-10-11-19-27-33-39-31-23-17-18-26-32-24-25 stigla do cilja da
+Figura 8 (SFF, zelena, 36s)-4-12-20-28-34-40-46-38-30-22-16-10-11-19-27-33-39-31-23-17-18-26-32-24 stigla do cilja ne
+Vrijeme trajanja simulacije: 225s

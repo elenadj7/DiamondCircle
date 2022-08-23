@@ -52,11 +52,14 @@ public class Ghost extends Thread{
 				while(diamonds.size() != size) {
 					int fieldPosition = rand.nextInt(path.size());
 					int element = path.elementAt(fieldPosition);
-					BoardField field = MainController.board.get(element);
-					
-					if(!diamonds.contains(element) && !field.hasFigure() && !field.hasHole()) {
+					synchronized(MainController.board) {
 						
-						diamonds.add(element);
+						BoardField field = MainController.board.get(element);
+						
+						if(!diamonds.contains(element) && !field.hasFigure() && !field.hasHole()) {
+							
+							diamonds.add(element);
+						}
 					}
 				}
 				

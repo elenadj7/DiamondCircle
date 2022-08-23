@@ -38,7 +38,7 @@ public abstract class Figure {
 	}
 	
 	public void setNumberOfDiamonds(int diamonds) {
-		numberOfDiamonds = diamonds;
+		numberOfDiamonds += diamonds;
 	}
 	
 	public void setEndTime(long time) {

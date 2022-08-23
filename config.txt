@@ -1,4 +1,4 @@
-9
-4
-Elena,Minja,Sanja,Tanja
-7
+8
+3
+Elena,Minja,Tanja
+5
