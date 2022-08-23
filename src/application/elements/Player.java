@@ -13,9 +13,9 @@ public class Player {
 
 	private String username;
 	private Vector<Figure>figures = new Vector<>(4);
-	private int playingFigure = 0;
+	private Figure playingFigure;
 	
-	public Player(String username, Color color) {
+	public Player(String username, Color color, int lastElement) {
 		
 		this.username = username;
 		
@@ -28,19 +28,21 @@ public class Player {
 			switch(number) {
 			
 			case 1:
-				figures.add(new RegularFigure(color));
+				figures.add(new RegularFigure(color, lastElement));
 				break;
 			case 2:
-				figures.add(new FloatingFigure(color));
+				figures.add(new FloatingFigure(color, lastElement));
 				break;
 			default:
-				figures.add(new SuperFastFigure(color));
+				figures.add(new SuperFastFigure(color, lastElement));
 				break;
 				
 			}
 			
 		counter--;
 		}
+		
+		playingFigure = figures.elementAt(0);
 	}
 	
 	public String getUsername() {
@@ -51,17 +53,26 @@ public class Player {
 		return figures;
 	}
 	
-	public void setPlayingFigure(int position) {
-		playingFigure = position;
-	}
-	
 	public Figure getPlayingFigure() {
 		
-		return figures.elementAt(playingFigure);
+		return playingFigure;
 	}
 	
 	public Color getColor() {
 		return figures.elementAt(0).getColor();
+	}
+	
+	public boolean nextFigure() {
+		int position = figures.indexOf(playingFigure);
+		if(++position < figures.size()) {
+			
+			playingFigure = figures.get(position);
+			return true;
+		}
+		else {
+			playingFigure = null;
+			return false;
+		}
 	}
 	
 	@Override

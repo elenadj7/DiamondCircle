@@ -14,14 +14,15 @@ public abstract class Figure {
 	protected String id;
 	protected long startTime;
 	protected long endTime;
-	protected boolean reachedTheGoal;
-	protected boolean playing = false;
+	protected int lastElement;
 	protected Vector<Integer> path = new Vector<>();
 	
-	public Figure(Color color) {
+	public Figure(Color color, int lastElement) {
 		
 		this.color = color;
 		serialNumber = ++instances;
+		currentPosition = 0;
+		this.lastElement = lastElement;
 	}
 	
 	public void setStartTime(long time) {
@@ -48,8 +49,8 @@ public abstract class Figure {
 		return color;
 	}
 	
-	public void playing(boolean true_or_false) {
-		playing = true_or_false;
+	public String getId() {
+		return id;
 	}
 	
 	public long getStartTime() {
@@ -72,19 +73,30 @@ public abstract class Figure {
 		return endTime;
 	}
 	
-	public void reachedTheGoal(int lastField) {
-		
-		if(currentPosition == lastField) {
-			
-			reachedTheGoal = true;
-		}
-		
-		reachedTheGoal = false;
-	}
-	
 	public String print() {
 		
-		String ret = "Figura (" + id +  ", " + color + ")";
+		String colorString = "";
+		
+		switch(color.toString()) {
+		
+		case "0x0000ffff":
+			colorString += "plava";
+			break;
+			
+		case "0xff0000ff":
+			colorString += "crvena";
+			break;
+			
+		case "0xcccc00ff":
+			colorString += "zuta";
+			break;
+			
+		case "0x008000ff":
+			colorString += "zelena";
+			break;
+		}
+		long time = endTime - startTime;
+		String ret = "Figura " + serialNumber + " (" + id +  ", " + colorString + ", " + time + "s)";
 		
 		for(var element : path) {
 			
@@ -92,9 +104,9 @@ public abstract class Figure {
 			ret += element;
 		}
 		
-		ret += "stigla do cilja ";
+		ret += " stigla do cilja ";
 		
-		if(reachedTheGoal) {
+		if(path.lastElement() == lastElement) {
 			ret += "da";
 		}
 		else {
@@ -108,4 +120,6 @@ public abstract class Figure {
 	public String toString() {
 		return "Figura " + serialNumber;
 	}
+	
+	public abstract int move(int cardNumber);
 }

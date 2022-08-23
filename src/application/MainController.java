@@ -3,8 +3,8 @@ package application;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.Collections;
 import java.util.HashMap;
-import java.util.Random;
 import java.util.Vector;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.FileHandler;
@@ -13,6 +13,7 @@ import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
 import application.elements.BoardField;
+import application.elements.Game;
 import application.elements.Player;
 import application.elements.TimeCounter;
 import application.elements.cards.Card;
@@ -20,9 +21,9 @@ import application.elements.cards.RegularCard;
 import application.elements.cards.SpecialCard;
 import application.elements.figures.Figure;
 import application.elements.figures.Ghost;
+import application.interfaces.CanFloat;
 import application.validations.DataValidation;
 import javafx.application.Application;
-import javafx.application.Platform;
 import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
@@ -30,7 +31,6 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
@@ -54,21 +54,23 @@ public class MainController extends Application{
 	
 	public static Logger logger;
 	public static FileHandler handler;
-	public static boolean lock = false;
 	public static boolean endOfSimulation = false;
 	public static AtomicBoolean run = new AtomicBoolean(true);
-	private static HashMap<Integer,BoardField> board = new HashMap<>();
-	private static Label time;
+	public static HashMap<Integer,BoardField> board = new HashMap<>();
+	public static Label time;
+	public static Label cardLabel;
+	public static Label labelResults;
+	public static Label numberOfGames;
+	public static int numberOfPlayers;
+	public static int numberOfHoles;
+	public static int matrixDimension;
 	
 	
-	//cuva se matrica gdje je kljuc broj polja a vrijednost referenca na label 
-	private int matrixDimension;
+	public Vector<Integer> matrixPath = new Vector<>();
 	private String[] config;
 	private Vector<Player> players = new Vector<>();
 	private Vector<Card> cards = new Vector<>();
-	private int numberOfPlayers;
-	private int numberOfHoles;
-	private Vector<Integer> matrixPath = new Vector<>();
+	
 	
 	@Override
 	public void start(Stage primaryStage) throws Exception {
@@ -78,13 +80,9 @@ public class MainController extends Application{
 			initialize();
 			DataValidation validation = new DataValidation();
 			validation.validate(config);
-			sortPlayers();
-	
-			//pokretanje threadova
-			TimeCounter timeCounter = new TimeCounter();
-			timeCounter.start();
-			Ghost ghost = new Ghost(matrixDimension, matrixPath);
-			ghost.start();
+			Collections.shuffle(players);
+			
+			
 			
 			//postavljanje scene
 			BorderPane root = (BorderPane)FXMLLoader.load(getClass().getResource("Main.fxml"));
@@ -108,7 +106,11 @@ public class MainController extends Application{
 			
 			
 			
+			
 			time = (Label)scene.lookup("#time");
+			cardLabel = (Label)scene.lookup("#cardLabel");
+			labelResults = (Label)scene.lookup("#labelResults");
+			
 			
 			
 			
@@ -138,11 +140,14 @@ public class MainController extends Application{
 							TimeCounter.toLock.notify();
 							
 						}
+						synchronized(Game.toLock) {
+							Game.toLock.notify();
+						}
 						run.set(true);
 						
 					}
 					else {
-							
+						
 						run.set(false);
 					}
 				}
@@ -152,7 +157,7 @@ public class MainController extends Application{
 			
 			
 			
-			Label numberOfGames = (Label)scene.lookup("#numberOfGames");
+			numberOfGames = (Label)scene.lookup("#numberOfGames");
 			numberOfGames.setText("Trenutan broj odigranih igara: " + new File(System.getProperty("user.dir") + "\\list of games").list().length);
 			
 			VBox vboxBoard = (VBox)scene.lookup("#vboxBoard");
@@ -211,8 +216,6 @@ public class MainController extends Application{
 			
 			
 			
-			
-			
 			//postavljanje figura na listview i korisnickih imena na gui 
 			VBox figureList = (VBox)scene.lookup("#figureList");
 			VBox listOfPlayers = (VBox)scene.lookup("#listOfPlayers");
@@ -222,7 +225,7 @@ public class MainController extends Application{
 				for(var figure : player.getFigures()) {
 					
 					Label labelFigure = new Label();
-					labelFigure.setText(figure.toString());
+					labelFigure.setText(figure.toString() + " - " + figure.getId());
 					labelFigure.setPrefWidth(150);
 					labelFigure.setPrefHeight(35);
 					labelFigure.setFont(Font.font("Arial", 15));
@@ -254,7 +257,10 @@ public class MainController extends Application{
 				listOfPlayers.getChildren().add(onePlayer);
 			}
 			
-			
+			//pokretanje threadova
+			new TimeCounter().start();
+			new Ghost(matrixDimension, matrixPath).start();
+			new Game(players, cards, matrixPath).start();
 			
 		} catch(Exception e) {
 			
@@ -305,7 +311,7 @@ public class MainController extends Application{
 		
 		for(int i = 0; i < tmpPlayers.length; ++i) {
 			
-			players.add(new Player(tmpPlayers[i], colors[i]));
+			players.add(new Player(tmpPlayers[i], colors[i], matrixPath.lastElement()));
 	
 		}
 		
@@ -313,31 +319,18 @@ public class MainController extends Application{
 		//12 specijalnih karti
 		for(int i = 0; i < 12; ++i) {
 			
-			cards.add(new SpecialCard(new Image(System.getProperty("user.dir") + "\\images\\special.png")));
+			cards.add(new SpecialCard(new ImageView(System.getProperty("user.dir") + "\\images\\special.png")));
 		}
 		
 		//po 10 regularnih
 		for(int i = 0; i < 10; ++i) {
 			
-			cards.add(new RegularCard(new Image(System.getProperty("user.dir") + "\\images\\simple1.png"), 1));
-			cards.add(new RegularCard(new Image(System.getProperty("user.dir") + "\\images\\simple2.png"), 2));
-			cards.add(new RegularCard(new Image(System.getProperty("user.dir") + "\\images\\simple3.png"), 3));
-			cards.add(new RegularCard(new Image(System.getProperty("user.dir") + "\\images\\simple4.png"), 4));
+			cards.add(new RegularCard(new ImageView(System.getProperty("user.dir") + "\\images\\regular1.png"), 1));
+			cards.add(new RegularCard(new ImageView(System.getProperty("user.dir") + "\\images\\regular2.png"), 2));
+			cards.add(new RegularCard(new ImageView(System.getProperty("user.dir") + "\\images\\regular3.png"), 3));
+			cards.add(new RegularCard(new ImageView(System.getProperty("user.dir") + "\\images\\regular4.png"), 4));
 		}
-	}
-	
-	
-	public void sortPlayers() {
 		
-		Random rand = new Random();
-		Vector<Player> tmpPlayers = new Vector<>();
-		for(int i = 0; i < players.size(); ++i) {
-			int randomNumber = rand.nextInt(players.size());
-			tmpPlayers.add(players.elementAt(randomNumber));
-			players.removeElementAt(randomNumber);
-		}
-	
-		players.addAll(tmpPlayers);
 	}
 	
 	
@@ -345,29 +338,33 @@ public class MainController extends Application{
 		launch(args);
 	}
 	
-	public static void updateMatrixFields(Vector<Integer> diamonds, Vector<Integer> oldDiamonds) {
+	public static void updateDiamonds(Vector<Integer> diamonds, Vector<Integer> oldDiamonds) {
 		
-		
-		for(var id : oldDiamonds) {
+		synchronized(board) {
 			
-			BoardField field = board.get(id);
-			Label label = field.getLabel();
-			label.setGraphic(null);
-			label.setText(id + "");
-			field.hasDiamond(false);
-		}
-
-
-		for(var id : diamonds) {
+			for(var id : oldDiamonds) {
+				
+				BoardField field = board.get(id);
+				Label label = field.getLabel();
+				label.setGraphic(null);
+				if(!field.hasFigure()) {
+					
+					label.setText(id + "");
+				}
+				field.hasDiamond(false);
+			}
 			
-			BoardField field = board.get(id);
-			Label label = field.getLabel();
-			ImageView image = new ImageView(System.getProperty("user.dir") + "\\images\\logo.png");
-			image.setFitWidth(30);
-			image.setFitHeight(30);
-			label.setText("");
-			label.setGraphic(image);
-			field.hasDiamond(true);
+			
+			for(var id : diamonds) {
+				
+				BoardField field = board.get(id);
+				Label label = field.getLabel();
+				ImageView image = new ImageView(System.getProperty("user.dir") + "\\images\\logo.png");
+				image.setFitWidth(20);
+				image.setFitHeight(20);
+				label.setGraphic(image);
+				field.hasDiamond(true);
+			}
 		}
 		
 
@@ -380,22 +377,123 @@ public class MainController extends Application{
 		
 	}
 	
-	public void startGame() {
+	public static void updateCard(Card card) {
 		
-		long counter = 0;
+		ImageView image = card.getImage();
+		image.setFitWidth(205);
+		image.setFitHeight(280);
 		
-		while(!endOfSimulation) {
+		cardLabel.setGraphic(image);
+		labelResults.setText(card.toString());
+	}
+	
+	public static void updateFigure(int oldPosition, Figure figure, Player player, Vector<Integer> matrixPath) {
+		
+		String text = "Igrač " + player.getUsername() + " je na potezu. ";
 			
-			int playerPosition = (int)(counter % numberOfPlayers);
-			Player currentPlayer = players.elementAt(playerPosition);
-			Figure currentFigure = currentPlayer.getPlayingFigure();
+		BoardField oldPositionField = board.get(matrixPath.elementAt(oldPosition));
+		Label oldPositionLabel = oldPositionField.getLabel();
+		oldPositionLabel.setText(matrixPath.elementAt(oldPosition) + "");
+		oldPositionLabel.setTextFill(Color.rgb(42, 97, 113));
+		oldPositionLabel.setBackground(new Background(new BackgroundFill(Color.rgb(215, 247, 245), new CornerRadii(3), Insets.EMPTY)));
+			
+				
+		BoardField currentPositionField = board.get(matrixPath.elementAt(figure.getCurrentPosition()));
+		Label currentPositionLabel = currentPositionField.getLabel();
+		currentPositionLabel.setText(figure.getId());
+		currentPositionLabel.setTextFill(Color.BLACK);
+		currentPositionLabel.setBackground(new Background(new BackgroundFill(figure.getColor(), new CornerRadii(3), Insets.EMPTY)));
+			
+				
+		int transition = figure.getCurrentPosition() - oldPosition;
+		text += figure.toString() + " prelazi " + transition + " polja i pomjera se sa pozicije " + matrixPath.elementAt(oldPosition) + " na poziciju " + matrixPath.elementAt(figure.getCurrentPosition()) + ".";
+				
+		
+		labelResults.setText(text);
+	}
+		
+	public static void removeOldFigure(Figure figure, int oldPosition, Vector<Integer> matrixPath) {
+		
+		BoardField oldPositionField = board.get(matrixPath.elementAt(oldPosition));
+		Label oldPositionLabel = oldPositionField.getLabel();
+		oldPositionLabel.setText(matrixPath.elementAt(oldPosition) + "");
+		oldPositionLabel.setTextFill(Color.rgb(42, 97, 113));
+		oldPositionLabel.setBackground(new Background(new BackgroundFill(Color.rgb(215, 247, 245), new CornerRadii(3), Insets.EMPTY)));
+		
+		labelResults.setText(figure.toString() + "  je završila igru.");
+		
+	}
+	
+	public static void updateHoles(Vector<Integer> holes, Vector<Figure> figures, Vector<Integer> matrixPath) {
+		
+		String text = "";
+		
+		for(var hole : holes) {
+			
+			BoardField field = board.get(matrixPath.elementAt(hole));
+			Label label = field.getLabel();
+			label.setText(matrixPath.elementAt(hole) + "");
+			label.setTextFill(Color.WHITE);
+			label.setBackground(new Background(new BackgroundFill(Color.BLACK, new CornerRadii(3), Insets.EMPTY)));
+				
+		}
+		
+		for(var figure : figures) {
 			
 			
+			if(figure instanceof CanFloat) {
+					
+				text += figure.toString() + " nije pojedena jer je lebdeća.\n";
+			}
+			else {
+				text += figure.toString() + " je pojedena.\n";
+			}
+		}
+		if(figures.isEmpty()) {
+			text += "Nijedna figura nije pojedena.";
+		}
+		
+		labelResults.setText(text);
+	}
+	
+	public static void deleteHoles(Vector<Integer> holes, Vector<Figure> figures, Vector<Integer> matrixPath) {
+		
+		for(var hole : holes) {
+				
+			BoardField field = board.get(matrixPath.elementAt(hole));
+			Label label = field.getLabel();
+			label.setTextFill(Color.rgb(42, 97, 113));
+			label.setBackground(new Background(new BackgroundFill(Color.rgb(215, 247, 245), new CornerRadii(3), Insets.EMPTY)));
+		}
 			
-			if(currentFigure.getPath().lastElement() == matrixPath.lastElement()) {
-				endOfSimulation = true;
+		for(var figure : figures) {
+				
+			if(figure instanceof CanFloat) {
+				
+				BoardField field = board.get(matrixPath.elementAt(figure.getCurrentPosition()));
+				Label label = field.getLabel();
+				label.setText(figure.getId());
+				label.setTextFill(Color.BLACK);
+				label.setBackground(new Background(new BackgroundFill(figure.getColor(), new CornerRadii(3), Insets.EMPTY)));
 			}
 		}
 	}
+	
+	public static void endOfSimulation() {
+		
+		labelResults.setText("Igra je završila!");
+		numberOfGames.setText("Trenutan broj odigranih igara: " + new File(System.getProperty("user.dir") + "\\list of games").list().length);
 
+	}
+	
+	public static void setStartFigure(Figure figure, Vector<Integer> matrixPath, int position) {
+		
+		BoardField field = board.get(matrixPath.elementAt(position));
+		Label label = field.getLabel();
+		label.setText(figure.getId());
+		label.setTextFill(Color.BLACK);
+		label.setBackground(new Background(new BackgroundFill(figure.getColor(), new CornerRadii(3), Insets.EMPTY)));
+		
+		labelResults.setText(figure.toString() + " kreće sa igrom. ");
+	}
 }

@@ -5,9 +5,19 @@ import javafx.scene.paint.Color;
 
 public class FloatingFigure extends Figure implements CanFloat{
 
-	public FloatingFigure(Color color) {
+	public FloatingFigure(Color color, int lastElement) {
 		
-		super(color);
+		super(color, lastElement);
 		super.id = "FF";
+	}
+	
+	public int move(int cardNumber) {
+		
+		int move = 0;
+		move += numberOfDiamonds;
+		move += cardNumber;
+		numberOfDiamonds = 0;
+		
+		return move;
 	}
 }

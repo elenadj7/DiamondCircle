@@ -15,31 +15,31 @@ public class BoardField {
 		this.label = label;
 	}
 
-	public boolean hasFigure() {
+	public synchronized boolean hasFigure() {
 		return hasFigure;
 	}
 	
-	public boolean hasDiamond() {
+	public synchronized boolean hasDiamond() {
 		return hasDiamond;
 	}
 	
-	public boolean hasHole() {
+	public synchronized boolean hasHole() {
 		return hasHole;
 	}
 	
-	public void hasFigure(boolean true_or_false) {
+	public synchronized void hasFigure(boolean true_or_false) {
 		hasFigure = true_or_false;
 	}
 	
-	public void hasDiamond(boolean true_or_false) {
+	public synchronized void hasDiamond(boolean true_or_false) {
 		hasDiamond = true_or_false;
 	}
 	
-	public void hasHole(boolean true_or_false) {
+	public synchronized void hasHole(boolean true_or_false) {
 		hasHole = true_or_false;
 	}
 	
-	public Label getLabel() {
+	public synchronized Label getLabel() {
 		return label;
 	}
 }

@@ -7,7 +7,7 @@ import javafx.application.Platform;
 
 public class TimeCounter extends Thread{
 
-	private long time = 0;
+	public static long time = 0;
 	public static Object toLock = new Object();
 	
 	public TimeCounter() {
@@ -31,12 +31,6 @@ public class TimeCounter extends Thread{
 				}
 			}
 			
-			try {
-				sleep(1000);
-			} catch (InterruptedException e) {
-				
-				MainController.logger.log(Level.WARNING, null, e);
-			}
 			Platform.runLater(new Runnable(){
 
 				@Override
@@ -48,6 +42,13 @@ public class TimeCounter extends Thread{
 				}
 				
 			});
+			
+			try {
+				sleep(1000);
+			} catch (InterruptedException e) {
+				
+				MainController.logger.log(Level.WARNING, null, e);
+			}
 		}
 	}
 }

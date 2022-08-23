@@ -1,12 +1,12 @@
 package application.elements.cards;
 
-import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 
 public class RegularCard extends Card{
 
 	private int id;
 	
-	public RegularCard(Image image, int id) {
+	public RegularCard(ImageView image, int id) {
 		super(image);
 		this.id = id;
 	}
@@ -22,6 +22,6 @@ public class RegularCard extends Card{
 	@Override
 	public String toString() {
 		
-		return "Izvucena je regularna karta sa brojem " + id;
+		return "Izvučena je regularna karta sa brojem " + id + ".";
 	}
 }

@@ -55,7 +55,7 @@
                   </ImageView>
                </graphic>
             </Label>
-            <Label prefHeight="126.0" prefWidth="872.0" style="-fx-border-width: 2;" textAlignment="CENTER" textFill="#2a6171">
+            <Label fx:id="labelResults" alignment="CENTER" contentDisplay="CENTER" prefHeight="126.0" prefWidth="872.0" style="-fx-border-width: 2;" textAlignment="CENTER" textFill="#2a6171">
                <font>
                   <Font name="Arial Bold" size="15.0" />
                </font></Label>
@@ -87,7 +87,7 @@
                   <Font name="Arial Bold" size="15.0" />
                </font>
             </Label>
-            <Label alignment="CENTER" prefHeight="280.0" prefWidth="205.0" style="-fx-border-color: #2a6171; -fx-border-width: 2;">
+            <Label fx:id="cardLabel" alignment="CENTER" prefHeight="280.0" prefWidth="205.0" style="-fx-border-color: #2a6171; -fx-border-width: 2;">
                <opaqueInsets>
                   <Insets />
                </opaqueInsets>

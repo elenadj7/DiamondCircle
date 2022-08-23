@@ -1,16 +1,16 @@
 package application.elements.cards;
 
-import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 
 public abstract class Card {
 
-	protected Image image;
+	protected ImageView image;
 	
-	public Card(Image image) {
+	public Card(ImageView image) {
 		this.image = image;
 	}
 	
-	public Image getImage() {
+	public ImageView getImage() {
 		return image;
 	}
 }
